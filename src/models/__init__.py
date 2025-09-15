@@ -1,5 +1,7 @@
 from pydantic import BaseModel as PydanticBaseModel
-from ..database import get_db, sqlalchemy
+from ..database import get_db, sqlalchemy, metadata, engine
+
+from .user import User as UserModel
 
 class BaseModel(PydanticBaseModel):
     class Config:
@@ -31,3 +33,7 @@ class BaseModel(PydanticBaseModel):
         with get_db() as db:
             db.execute(sqlalchemy.text(f"DELETE FROM {table} WHERE id = :id"), {"id": self.id})
             db.commit()
+    
+User, user_table = UserModel(BaseModel, metadata)
+
+metadata.create_all(engine)
