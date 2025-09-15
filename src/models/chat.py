@@ -18,7 +18,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
             orm_mode = True
 
         @classmethod
-        def get(cls: Type['Chat'], id: str):
+        def get(cls: Type['Chat'], id: str) -> Optional['Chat']:
             table = 'chat'
             with get_db() as db:
                 row = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE id = :id"), {"id": id}).fetchone()
@@ -27,7 +27,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return None
 
         @classmethod
-        def all(cls: Type['Chat']):
+        def all(cls: Type['Chat']) -> list['Chat']:
             table = 'chat'
             with get_db() as db:
                 rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table}")).fetchall()
@@ -36,7 +36,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return []
 
         @classmethod
-        def by_project(cls: Type['Chat'], project_id: str):
+        def by_project(cls: Type['Chat'], project_id: str) -> list['Chat']:
             table = 'chat'
             with get_db() as db:
                 rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE project_id = :project_id"), {"project_id": project_id}).fetchall()
@@ -55,7 +55,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
             orm_mode = True
 
         @classmethod
-        def get(cls: Type['Message'], id: str):
+        def get(cls: Type['Message'], id: str) -> Optional['Message']:
             table = 'message'
             with get_db() as db:
                 row = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE id = :id"), {"id": id}).fetchone()
@@ -64,7 +64,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return None
             
         @classmethod
-        def get_all_by_chat(cls: Type['Message'], chat_id: str):
+        def get_all_by_chat(cls: Type['Message'], chat_id: str) -> list['Message']:
             table = 'message'
             with get_db() as db:
                 rows = sorted(db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE chat_id = :chat_id"), {"chat_id": chat_id}).fetchall(), key=lambda x: x[4])
@@ -73,7 +73,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return []
 
         @classmethod
-        def all(cls: Type['Message']):
+        def all(cls: Type['Message']) -> list['Message']:
             table = 'message'
             with get_db() as db:
                 rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table}")).fetchall()
@@ -82,7 +82,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return []
             
         @classmethod
-        def delete_(cls: Type['Message'], id: str, user_id: str):
+        def delete_(cls: Type['Message'], id: str, user_id: str) -> None:
             message = cls.get(id)
             if not message:
                 return
@@ -93,7 +93,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 db.execute(sqlalchemy.text(f"DELETE FROM {table} WHERE id = :id"), {"id": id})
                 db.commit()
                 
-        def delete(self, user_id: str):
+        def delete(self, user_id: str) -> None:
             return self.delete_(self.id, user_id)
 
 
