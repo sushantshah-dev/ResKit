@@ -2,7 +2,8 @@ from pydantic import BaseModel as PydanticBaseModel
 from ..database import get_db, sqlalchemy, metadata, engine
 
 from .user import User as UserModel
-from chat import Chat as ChatModel
+from .chat import Chat as ChatModel
+from .file import File as FileModel
 
 class BaseModel(PydanticBaseModel):
     class Config:
@@ -37,5 +38,6 @@ class BaseModel(PydanticBaseModel):
     
 User, user_table = UserModel(BaseModel, metadata)
 Chat, Message, chat_table, message_table = ChatModel(BaseModel, metadata)
+File, FileComment, file_table, file_comment_table = FileModel(BaseModel, metadata)
 
 metadata.create_all(engine)
