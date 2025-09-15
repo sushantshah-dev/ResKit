@@ -2,6 +2,7 @@ from pydantic import BaseModel as PydanticBaseModel
 from ..database import get_db, sqlalchemy, metadata, engine
 
 from .user import User as UserModel
+from chat import Chat as ChatModel
 
 class BaseModel(PydanticBaseModel):
     class Config:
@@ -35,5 +36,6 @@ class BaseModel(PydanticBaseModel):
             db.commit()
     
 User, user_table = UserModel(BaseModel, metadata)
+Chat, Message, chat_table, message_table = ChatModel(BaseModel, metadata)
 
 metadata.create_all(engine)
