@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ResKit</title>
+    <meta name="description" content="ResKit is an AI-powered toolkit for researchers, offering advanced paper search, reference exploration, and interactive knowledge graphs.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/app.css') }}">
+</head>
+<body>
+    <div id="app" class="container">
+    </div>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <script src="{{ url_for('static', filename='javascript/app.js') }}" type="module"></script>
+</body>
+</html>
