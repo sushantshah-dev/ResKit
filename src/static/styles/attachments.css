@@ -1,0 +1,50 @@
+.chat-attachments {
+    position: absolute;
+    top: -112px;
+    left: 0;
+    width: 100%;
+    height: 112px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    overflow-x: auto;
+    padding-block: 8px;
+    box-sizing: border-box;
+}
+
+.chat-attachments .attachment-card {
+    display: flex;
+    width: 128px;
+    height: 96px;
+    background-color: var(--rim-color);
+    padding: 8px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.chat-attachments .attachment-card > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 112px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 0;
+}
+
+.chat-attachments .attachment-card .remove-attachment {
+    position: absolute;
+    width: 128px;
+    height: 96px;
+    top: 0;
+    left: 0;
+    display: none;
+}
+
+.chat-attachments .attachment-card:hover .remove-attachment {
+    display: flex;
+    cursor: pointer;
+}
