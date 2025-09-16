@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, Type
-from sqlalchemy import DateTime, ForeignKey, Table, Column, String, MetaData
+from sqlalchemy import DateTime, ForeignKey, Table, Column, String, MetaData, select
 import sqlalchemy
+from sqlalchemy.dialects.postgresql import ARRAY
 import uuid
 from datetime import datetime
 
@@ -9,6 +10,7 @@ from ..database import get_db
 
 def File(baseModel: Type[BaseModel], metadata: MetaData):
     class File(baseModel):
+        __tablename__ = 'file'
         id: Optional[str] = None
         name: str = ""
         owner_id: str = ""
@@ -21,22 +23,20 @@ def File(baseModel: Type[BaseModel], metadata: MetaData):
             
         @classmethod
         def get_all_by_owner(cls: Type['File'], owner_id: str) -> list['File']:
-            table = 'file'
             with get_db() as db:
-                rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE owner_id = :owner_id"), {"owner_id": owner_id}).fetchall()
+                rows = db.execute(select(file_table).where(file_table.c.owner_id == owner_id)).fetchall()
                 if rows:
-                    return [cls(id=row[0], name=row[1], comments=row[2] or [], owner_id=row[3], date_uploaded=row[4], data=row[5]) for row in rows]
+                    return [cls(id=row.id, name=row.name, comments=row.comments or [], owner_id=row.owner_id, date_uploaded=row.date_uploaded, data=row.data) for row in rows]
                 return []
             
         @classmethod
         def get(cls, id: str, user_id: Optional[str] = None) -> Optional['File']:
-            table = 'file'
             with get_db() as db:
-                row = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE id = :id"), {"id": id}).fetchone()
+                row = db.execute(select(file_table).where(file_table.c.id == id)).fetchone()
                 if row:
-                    if user_id and row[3] != user_id:
+                    if user_id and row.owner_id != user_id:
                         raise UnauthorizedFileAccess(id, user_id)
-                    return cls(id=row[0], name=row[1], comments=row[2] or [], owner_id=row[3], date_uploaded=row[4], data=row[5])  # Updated
+                    return cls(id=row.id, name=row.name, comments=row.comments or [], owner_id=row.owner_id, date_uploaded=row.date_uploaded, data=row.data)
                 return None
 
         @classmethod
@@ -53,14 +53,14 @@ def File(baseModel: Type[BaseModel], metadata: MetaData):
 
         @classmethod
         def all(cls) -> list['File']:
-            table = cls.__name__.lower()
             with get_db() as db:
-                rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table}")).fetchall()
+                rows = db.execute(select(file_table)).fetchall()
                 if rows:
-                    return [cls(id=row[0], name=row[1], comments=row[2] or [], owner_id=row[3], date_uploaded=row[4], data=row[5]) for row in rows]
+                    return [cls(id=row.id, name=row.name, comments=row.comments or [], owner_id=row.owner_id, date_uploaded=row.date_uploaded, data=row.data) for row in rows]
                 return []
 
     class FileComment(baseModel):
+        __tablename__ = 'file_comment'
         id: Optional[str] = None
         file_id: str
         comment: str
@@ -71,20 +71,19 @@ def File(baseModel: Type[BaseModel], metadata: MetaData):
             
         @classmethod
         def get_all_by_file(cls: Type['FileComment'], file_id: str) -> list['FileComment']:
-            table = 'file_comment'
             with get_db() as db:
-                rows = db.execute(sqlalchemy.text(f"SELECT * FROM {table} WHERE file_id = :file_id"), {"file_id": file_id}).fetchall()
+                rows = db.execute(select(file_comment_table).where(file_comment_table.c.file_id == file_id)).fetchall()
                 if rows:
-                    return [cls(id=row[0], file_id=row[1], comment=row[2], user_id=row[3]) for row in rows]
+                    return [cls(id=row.id, file_id=row.file_id, comment=row.comment, user_id=row.user_id) for row in rows]
                 return []
 
     file_table = Table(
         'file',
         metadata,
-        Column('id', String, primary_key=True, autoincrement=True, default=lambda: str(uuid.uuid4())),
+        Column('id', String, primary_key=True, default=lambda: str(uuid.uuid4())),
         Column('name', String, nullable=False),
-        Column('comments', String),  # Storing JSON as string
-        Column('owner_id', String, ForeignKey('user.id'), nullable=False),
+        Column('comments', ARRAY(String), nullable=True),
+        Column('owner_id', String, ForeignKey("'user'.id"), nullable=False),
         Column('date_uploaded', DateTime, default=datetime.utcnow),
         Column('data', sqlalchemy.LargeBinary),  # Storing file data as binary
     )
@@ -95,7 +94,7 @@ def File(baseModel: Type[BaseModel], metadata: MetaData):
         Column('id', String, primary_key=True, default=lambda: str(uuid.uuid4())),
         Column('file_id', String, ForeignKey('file.id', ondelete='CASCADE'), nullable=False),
         Column('comment', String, nullable=False),
-        Column('user_id', String, ForeignKey('user.id', ondelete='SET NULL'), nullable=False),
+        Column('user_id', String, ForeignKey("'user'.id", ondelete='SET NULL'), nullable=False),
     )
 
     return File, FileComment, file_table, file_comment_table
