@@ -1,9 +1,12 @@
 from pydantic import BaseModel as PydanticBaseModel
 from ..database import get_db, sqlalchemy, metadata, engine
 
+from sqlalchemy import delete, select, update, insert
+
 from .user import User as UserModel
 from .chat import Chat as ChatModel
 from .file import File as FileModel
+from .project import Project as ProjectModel
 
 class BaseModel(PydanticBaseModel):
     class Config:
@@ -13,31 +16,55 @@ class BaseModel(PydanticBaseModel):
         return self.model_dump()
     
     def save(self):
-        table = self.__class__.__name__.lower()
+        table = metadata.tables.get(self.__tablename__)
         data = self.model_dump(exclude_unset=True)
+        
         with get_db() as db:
-            if hasattr(self, 'id') and self.id is not None:
-                if db.execute(sqlalchemy.text(f"SELECT 1 FROM {table} WHERE id = :id"), {"id": self.id}).fetchone():
-                    stmt = sqlalchemy.text(f"UPDATE {table} SET " + ", ".join([f"{key} = :{key}" for key in data.keys() if key != 'id']) + " WHERE id = :id")
-                    db.execute(stmt, data)
+            if hasattr(self, 'id') and self.id is not None and table is not None:
+                result = db.execute(select(table).where(table.c.id == self.id)).first()
+                if result:
+                    db.execute(update(table).where(table.c.id == self.id).values(**{k: v for k, v in data.items() if k != 'id'}))
                     db.commit()
                     return self
-            stmt = sqlalchemy.text(f"INSERT INTO {table} (" + ", ".join(data.keys()) + ") VALUES (" + ", ".join([f":{key}" for key in data.keys()]) + ")")
-            result = db.execute(stmt, data)
-            self.id = result.lastrowid
-            db.commit()
+            if table is not None:
+                result = db.execute(insert(table).values(**data))
+                try:
+                    self.id = result.inserted_primary_key[0]
+                except Exception:
+                    self.id = getattr(result, 'lastrowid', None)
+                db.commit()
         return self
     
     def delete(self):
+        table = metadata.tables.get(self.__tablename__)
+        
         if not hasattr(self, 'id') or self.id is None:
             raise ValueError("Instance does not have an id.")
-        table = self.__class__.__name__.lower()
+        
         with get_db() as db:
-            db.execute(sqlalchemy.text(f"DELETE FROM {table} WHERE id = :id"), {"id": self.id})
-            db.commit()
+            if table is not None:
+                db.execute(delete(table).where(table.c.id == self.id))
+                db.commit()
     
 User, user_table = UserModel(BaseModel, metadata)
 Chat, Message, chat_table, message_table = ChatModel(BaseModel, metadata)
 File, FileComment, file_table, file_comment_table = FileModel(BaseModel, metadata)
+Project, project_table = ProjectModel(BaseModel, metadata)
 
 metadata.create_all(engine)
+
+with get_db() as db:
+    system_user = db.execute(select(user_table).where(user_table.c.id == 'system')).first()
+    assistant_user = db.execute(select(user_table).where(user_table.c.id == 'assistant')).first()
+    tool_user = db.execute(select(user_table).where(user_table.c.id == 'tool')).first()
+    card_user = db.execute(select(user_table).where(user_table.c.id == 'card')).first()
+
+    if not system_user:
+        db.execute(insert(user_table).values(id='system', username='System', email='system@reskit.com', hashed_password='hashed_system_password'))
+    if not assistant_user:
+        db.execute(insert(user_table).values(id='assistant', username='Assistant', email='assistant@reskit.com', hashed_password='hashed_assistant_password'))
+    if not tool_user:
+        db.execute(insert(user_table).values(id='tool', username='Tool', email='tool@reskit.com', hashed_password='hashed_tool_password'))
+    if not card_user:
+        db.execute(insert(user_table).values(id='card', username='Card', email='card@reskit.com', hashed_password='hashed_card_password'))
+    db.commit()
