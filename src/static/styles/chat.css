@@ -1,0 +1,42 @@
+.chat-box, .search-box {
+    position: absolute;
+    width: 100%;
+    transition: all 0.3s ease;
+    background-color: var(--rim-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    padding: 16px;
+
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-box {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.search-box {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.chat-box.empty, .search-box.empty {
+    transition: all 0s ease;
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+}
+
+.chat-box input[type="text"], .search-box input[type="text"] {
+    width: 100%;
+    border: none;
+    font-size: 16px;
+    background-color: var(--rim-color);
+    color: var(--text-color);
+}

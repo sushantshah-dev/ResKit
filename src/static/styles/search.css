@@ -1,0 +1,59 @@
+.search-input-container {
+    width: calc(100% - 42px - 24px);
+}
+
+.search-input-container input {
+    height: 24px;
+}
+
+.search-output {
+    padding-top: calc(88px + 8px);
+    width: calc(80% - 64px);
+    height: 100%;
+}
+
+.search-output .search-results {
+    overflow-y: scroll;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.search-output .search-results .search-result {
+    background-color: var(--rim-color);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+.search-chips {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    display: flex;
+    gap: 8px;
+    flex-direction: row;
+    margin-top: 8px;
+    width: 100%;
+    height: 24px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.search-chips .chip {
+    padding: 4px 12px;
+    border: 1px solid var(--accent-color);
+    border-radius: 16px;
+    color: var(--accent-color);
+    background-color: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.search-chips .chip.active {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+}

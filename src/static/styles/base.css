@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+    --background-color: hsl(257, 15%, 8%);
+    --rim-color: hsl(257, 15%, 16%);
+    --polka-dot-color: hsl(257, 35%, 40%);
+    --accent-color: hsl(257, 100%, 70%);
+    --text-color: hsl(0, 0%, 100%);
+
+    --vs-primary: hsl(257, 100%, 70%);
+    --vs-success: hsl(142, 100%, 37%);
+    --vs-danger: hsl(348, 100%, 61%);
+    --vs-warning: hsl(48, 100%, 67%);
+    --vs-dark: hsl(257, 15%, 16%);
+}
+
+* {
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+    transition: all 0.3s ease;
+}
+
+html {
+    background-color: var(--background-color);
+    width: 100%;
+    height: 100%;
+    color: var(--text-color);
+}
+
+body {
+    margin: 0;
+
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+
+    height: 100%;
+}
+
+body .backdrop {
+    opacity: 0.4;
+    z-index: 1;
+    background-image: radial-gradient(var(--polka-dot-color) 0.8500000000000001px, var(--background-color) 0.8500000000000001px);
+    background-size: 17px 17px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+body .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--dark);
+    opacity: 0.85;
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    
+    width: 100%;
+    height: 100%;
+}
+
+body .overlay .box {
+    background-color: var(--rim-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 40%;
+}
+
+body .overlay .box input {
+    align-self: stretch;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+}
+
+body .overlay .box input::placeholder {
+    color: var(--text-color);
+    opacity: 0.4;
+}
+
+body .overlay .box input:focus, body .overlay .box input:focus-visible {
+    outline: none;
+}
+
+body .overlay .box button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+}
+
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+}

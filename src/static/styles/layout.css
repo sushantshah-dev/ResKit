@@ -1,0 +1,39 @@
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.container {
+    padding: 12px;
+    padding-left: 0;
+    box-sizing: border-box;
+}
+
+.main-container {
+    flex-grow: 1;
+    margin-left: 0;
+    border-radius: 8px;
+    position: relative;
+    background-color: var(--background-color);
+    overflow: hidden;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.main-container .main {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+}
+
+.main-container .main .views {
+    background-color: var(--rim-color);
+    border-radius: 8px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px;
+}

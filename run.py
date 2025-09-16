@@ -5,4 +5,5 @@ dotenv.load_dotenv()
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('PRODUCTION', 'True') == 'False')
+    app, socketio = create_app()
+    socketio.run(app, debug=os.getenv('PRODUCTION', 'True') == 'False')
