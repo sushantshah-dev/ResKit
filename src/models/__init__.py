@@ -8,7 +8,7 @@ from .chat import Chat as ChatModel
 from .file import File as FileModel
 from .project import Project as ProjectModel
 
-from .chat import UnauthorisedMessage, UnauthorizedMessageDeletion, ChatNotFound, MessageNotFound
+from .chat import UnauthorizedChatAccess, UnauthorisedMessage, UnauthorizedMessageDeletion, ChatNotFound, MessageNotFound
 from .file import UnauthorizedFileAccess, FileNotFound, FileCommentNotFound
 from .project import UnauthorizedProjectAccess, UnauthorizedProjectModification, UnauthorizedProjectDeletion, ProjectNotFound
 
