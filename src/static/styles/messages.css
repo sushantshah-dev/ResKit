@@ -1,13 +1,13 @@
 .messages-list {
     display: flex;
     flex-direction: column;
-
-    margin-bottom: calc(74px);
+    margin-bottom: calc(80px);
     height: 100%;
-    width: calc(100% - 150px);
-    max-height: calc(100vh - (74px + 64px) - 32px - 16px);
+    width: calc(100% - 72px);
+    max-height: calc(100vh - 32px - 16px);
     overflow-y: auto;
-    padding-right: 8px;
+    margin-right: 72px;
+    padding: 32px;
 }
 
 .messages-list .message {
