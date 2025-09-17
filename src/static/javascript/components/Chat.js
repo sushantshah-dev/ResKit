@@ -107,12 +107,13 @@ export default {
                         return file;
                     })
                 );
+                
                 await Promise.all(files.map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('project_id', props.projectId);
-                    try {
-                        const data = await apiCall('/api/upload', 'POST', formData, true);
+                    
+                    apiCall('/api/upload', 'POST', formData, true).then((data) => {
                         const file_id = data.filename;
                         const card = document.createElement('div');
                         attachments.value.push(file_id);
@@ -131,9 +132,9 @@ export default {
                         removeBtn.innerHTML = '&times;';
                         card.appendChild(removeBtn);
                         document.getElementById('chat-attachments').appendChild(card);
-                    } catch (error) {
+                    }).catch((error) => {
                         console.error('Upload error:', error);
-                    }
+                    });
                 }));
             } catch (error) {
                 console.error('Error selecting files:', error);
