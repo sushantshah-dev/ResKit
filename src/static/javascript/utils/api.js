@@ -13,6 +13,13 @@ export const apiCall = async (endpoint, method = 'GET', body = null, includeToke
         }
     }
     const res = await fetch(endpoint, options);
-    if (!res.ok) throw new Error(`${method} failed: ${res.status}`);
-    return await res.json();
+    const data = await res.json().catch(() => null);
+    
+    if (data.error || !res.ok) {
+        return (Promise.reject({
+            status: res.status,
+            error: data.error || 'An error occurred'
+        }));
+    }
+    return Promise.resolve(data);
 };

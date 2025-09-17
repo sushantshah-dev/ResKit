@@ -130,25 +130,20 @@ export default {
 
         async function sendMessage() {
             if (newMessage.value.trim() === '' || loading.value) return;
-            loading.value = true;
+            const message = newMessage.value.trim();
+            newMessage.value = '';
             const attachmentsList = attachments.value;
             attachments.value = [];
             document.querySelector("#chat-attachments").innerHTML = "";
-            try {
-                const bodyObj = {
-                    project_id: props.projectId,
-                    message: newMessage.value,
-                    attachments: attachmentsList
-                };
-                const data = await apiCall('/api/send-message', 'POST', bodyObj, true);
-                console.log('Message sent:', data);
-            } catch (err) {
+            
+            const bodyObj = {
+                project_id: props.projectId,
+                message: message,
+                attachments: attachmentsList
+            };
+            apiCall('/api/send-message', 'POST', bodyObj, true).catch((err) => {
                 console.error('Error sending message:', err);
-                messages.value.push({ role: 'assistant', content: [{ type: 'text', text: 'Error: ' + err.message }] });
-            } finally {
-                newMessage.value = '';
-                loading.value = false;
-            }
+            });
         }
 
         onMounted(() => {
@@ -194,8 +189,7 @@ export default {
         });
 
         async function fetchInitialMessages(projectId) {
-            try {
-                const data = await apiCall(`/api/read-messages/${projectId}`, 'GET', null, true);
+            await apiCall(`/api/read-messages/${projectId}`, 'GET', null, true).then((data) => {
                 data.forEach(msg => {
                     if (msg.role === 'assistant' && msg.content && msg.content.length > 0 && msg.content[0].type === 'text') {
                         msg.content[0].text = marked.parse(msg.content[0].text);
