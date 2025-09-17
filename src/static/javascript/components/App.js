@@ -16,7 +16,7 @@ export default {
         </div>
     `,
     setup() {
-        const { ref, onMounted } = Vue;
+        const { ref } = Vue;
         const user = ref(null);
         const projects = ref([]);
 
@@ -41,11 +41,10 @@ export default {
             projects.value.push(newProject);
         }
 
-        onMounted(() => {
-            fetchProfile();
-            fetchProjects();
-        });
-
-        return { user, projects, handleProjectCreated };
+        return { user, projects, handleProjectCreated, fetchProfile, fetchProjects };
+    },
+    created() {
+        this.fetchProfile();
+        this.fetchProjects();
     }
 };
