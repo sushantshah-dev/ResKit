@@ -49,10 +49,10 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
         def add_message_(cls: Type['Chat'], chat_id: str, user_id: str, content: str, attachments: Optional[List[str]] = []) -> 'Message':
             chat = cls.get(chat_id)
             if not chat:
-                raise UnauthorisedMessageError(user_id, chat_id)
+                raise UnauthorisedMessage(user_id, chat_id)
             print(chat.members, user_id)
             if chat.members and user_id not in chat.members + ['system']:
-                raise UnauthorisedMessageError(user_id, chat_id)
+                raise UnauthorisedMessage(user_id, chat_id)
             message = Message(chat_id=chat_id, user_id=user_id, content=content, attachments=attachments)
             message.save()
             return message
@@ -102,7 +102,7 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
             
         def delete(self, user_id: str):
             if self.user_id != user_id:
-                raise UnauthorizedMessageDeletionError(user_id, self.id)
+                raise UnauthorizedMessageDeletion(user_id, self.id)
             super().delete()
 
 
@@ -131,16 +131,28 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
 
     return Chat, Message, chat_table, message_table
 
-class UnauthorisedMessageError(Exception):
+class UnauthorisedMessage(Exception):
     def __init__(self, user_id: str = None, chat_id: str = None):
         self.user_id = user_id
         self.chat_id = chat_id
         self.message =  f"User {user_id} is not authorized to access chat {chat_id}"
         super().__init__(self.message)
 
-class UnauthorizedMessageDeletionError(Exception):
+class UnauthorizedMessageDeletion(Exception):
     def __init__(self, user_id: str = None, message_id: str = None):
         self.user_id = user_id
         self.message_id = message_id
         self.message =  f"User {user_id} is not authorized to delete message {message_id}"
+        super().__init__(self.message)
+        
+class ChatNotFound(Exception):
+    def __init__(self, chat_id: str = None):
+        self.chat_id = chat_id
+        self.message =  f"Chat {chat_id} not found"
+        super().__init__(self.message)
+        
+class MessageNotFound(Exception):
+    def __init__(self, message_id: str = None):
+        self.message_id = message_id
+        self.message =  f"Message {message_id} not found"
         super().__init__(self.message)
