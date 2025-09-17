@@ -137,6 +137,13 @@ class UnauthorisedMessage(Exception):
         self.chat_id = chat_id
         self.message =  f"User {user_id} is not authorized to access chat {chat_id}"
         super().__init__(self.message)
+        
+class UnauthorizedChatAccess(Exception):
+    def __init__(self, user_id: str = None, chat_id: str = None):
+        self.user_id = user_id
+        self.chat_id = chat_id
+        self.message =  f"User {user_id} is not authorized to access chat {chat_id}"
+        super().__init__(self.message)
 
 class UnauthorizedMessageDeletion(Exception):
     def __init__(self, user_id: str = None, message_id: str = None):
