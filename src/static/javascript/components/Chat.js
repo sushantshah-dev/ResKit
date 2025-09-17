@@ -181,20 +181,10 @@ export default {
             });
             socket.value.on('new_card', (data) => {
                 console.log('New cards received:', data);
-            });
+                data.cards.forEach(card => {
+                    messages.value.push({ role: 'card', user_id: 'card', content: [{ type: 'text', text: card }] });
+                });
 
-            watch(() => props.projectId, (newVal) => {
-                if (newVal) {
-                    messages.value = [];
-                    lastread.value = null;
-                    if (socket.value && connected.value) {
-                        socket.value.emit('join', { projectId: newVal });
-                    }
-                    fetchInitialMessages(newVal);
-                }
-            }, { immediate: true });
-
-            watch(messages, () => {
                 if (messagesList.value) {
                     messagesList.value.scrollTop = messagesList.value.scrollHeight;
                 }
@@ -213,10 +203,19 @@ export default {
                 if (data.length > 0) {
                     lastread.value = new Date(data[data.length - 1].timestamp);
                 }
-            } catch (err) {
-                console.error('Error fetching initial messages:', err);
-            }
+            });
         }
+
+        watch(() => props.projectId, (newVal) => {
+            if (newVal) {
+                messages.value = [];
+                lastread.value = null;
+                if (socket.value && connected.value) {
+                    socket.value.emit('join', { projectId: newVal });
+                }
+                fetchInitialMessages(newVal);
+            }
+        }, { immediate: true });
 
         onUnmounted(() => {
             if (socket.value) {
