@@ -16,42 +16,35 @@ export default {
         </div>
     `,
     setup() {
-        const { ref, onMounted } = Vue;
+        const { ref } = Vue;
         const user = ref(null);
         const projects = ref([]);
 
         async function fetchProfile() {
-            try {
-                const data = await apiCall('/auth/profile', 'GET', null, true);
-                if (data.message && data.message === "Token is invalid!") {
-                    window.location.href = '/auth';
-                    return;
-                }
+            await apiCall('/auth/profile', 'GET', null, true).then((data) => {
                 user.value = data;
-                console.log('Fetched user profile:', data);
-            } catch (err) {
-                console.error('Failed to fetch profile:', err);
-            }
+            }).catch((err) => {
+                console.error('Error fetching profile:', err);
+                window.location.href = '/auth';
+            });
         }
 
         async function fetchProjects() {
-            try {
-                const data = await apiCall('/api/projects', 'GET', null, true);
+            await apiCall('/api/projects', 'GET', null, true).then((data) => {
                 projects.value = data || [];
-            } catch (err) {
+            }).catch((err) => {
                 console.error('Error fetching projects:', err);
-            }
+            });
         }
 
         function handleProjectCreated(newProject) {
             projects.value.push(newProject);
         }
 
-        onMounted(() => {
-            fetchProfile();
-            fetchProjects();
-        });
-
-        return { user, projects, handleProjectCreated };
+        return { user, projects, handleProjectCreated, fetchProfile, fetchProjects };
+    },
+    created() {
+        this.fetchProfile();
+        this.fetchProjects();
     }
 };

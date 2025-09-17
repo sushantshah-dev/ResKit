@@ -4,29 +4,41 @@ const { onUnmounted } = Vue;
 const PaperCard = {
     props: ['card'],
     template: `
-        
         <div class="paper-card">
             <h3>{{ card.title }}</h3>
-            <p><strong>Authors:</strong> {{ card.authors.join(', ') }}</p>
-            <p><strong>Published:</strong> {{ card.published }}</p>
-            <p>{{ card.summary }}</p>
+            <p class="authors"><strong>Authors:</strong> {{ card.authors.join(', ') }}</p>
+            <p class="published">Published on {{ formatDate(card.published) }}</p>
+            <p class="summary">{{ card.summary }}</p>
             <a v-if="card.pdf_link" :href="card.pdf_link" target="_blank">PDF</a>
         </div>
-    `
+    `,
+    methods: {
+        formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit'
+            });
+        }
+    }
 };
 
 const MessageComponent = {
     components: { PaperCard },
-    props: ['message'],
+    props: ['message', 'noName', 'name'],
     template: `
         <div :class="['message', message.role === 'user' ? 'user' : 'ai']">
+            <span v-if="!noName" :class="message.role === 'user' ? 'user-tag' : 'ai-tag'">
+                {{ name }}
+            </span>
             <span v-if="message.user_id === 'system' && message.content[0].text !== ''" :class="'ai-msg'" v-html="message.content[0].text"></span>
             <span v-else-if="user && message.user_id === user.id" :class="'user-msg'">
                 {{ message.content[0].text }}
             </span>
-            <span v-else-if="message.user_id === 'card'" :class="'ai-msg'">
-                <PaperCard :card="message.content[0].text" />
-            </span>
+            <PaperCard :card="message.content[0].text" v-else-if="message.user_id === 'card'" />
             <span v-else :class="'peer-msg'">
                 {{ message.content[0].text }}
             </span>
@@ -52,8 +64,8 @@ export default {
                     <ion-icon name="send"></ion-icon>
                 </button>
             </div>
-            <div v-if="messages.length > 0" class="messages-list">
-                <MessageComponent :message="msg" v-for="(msg, idx) in messages" :key="idx"/>
+            <div v-if="messages.length > 0" class="messages-list" ref="messagesList">
+                <MessageComponent :message="msg" v-for="(msg, idx) in messages" :key="idx" :noName="idx > 0 && messages[idx - 1].user_id === msg.user_id" :name="msg.username"></MessageComponent>
             </div>
         </div>
     `,
@@ -95,12 +107,13 @@ export default {
                         return file;
                     })
                 );
+                
                 await Promise.all(files.map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('project_id', props.projectId);
-                    try {
-                        const data = await apiCall('/api/upload', 'POST', formData, true);
+                    
+                    apiCall('/api/upload', 'POST', formData, true).then((data) => {
                         const file_id = data.filename;
                         const card = document.createElement('div');
                         attachments.value.push(file_id);
@@ -119,9 +132,9 @@ export default {
                         removeBtn.innerHTML = '&times;';
                         card.appendChild(removeBtn);
                         document.getElementById('chat-attachments').appendChild(card);
-                    } catch (error) {
+                    }).catch((error) => {
                         console.error('Upload error:', error);
-                    }
+                    });
                 }));
             } catch (error) {
                 console.error('Error selecting files:', error);
@@ -130,25 +143,20 @@ export default {
 
         async function sendMessage() {
             if (newMessage.value.trim() === '' || loading.value) return;
-            loading.value = true;
+            const message = newMessage.value.trim();
+            newMessage.value = '';
             const attachmentsList = attachments.value;
             attachments.value = [];
             document.querySelector("#chat-attachments").innerHTML = "";
-            try {
-                const bodyObj = {
-                    project_id: props.projectId,
-                    message: newMessage.value,
-                    attachments: attachmentsList
-                };
-                const data = await apiCall('/api/send-message', 'POST', bodyObj, true);
-                console.log('Message sent:', data);
-            } catch (err) {
+            
+            const bodyObj = {
+                project_id: props.projectId,
+                message: message,
+                attachments: attachmentsList
+            };
+            apiCall('/api/send-message', 'POST', bodyObj, true).catch((err) => {
                 console.error('Error sending message:', err);
-                messages.value.push({ role: 'assistant', content: [{ type: 'text', text: 'Error: ' + err.message }] });
-            } finally {
-                newMessage.value = '';
-                loading.value = false;
-            }
+            });
         }
 
         onMounted(() => {
@@ -173,20 +181,10 @@ export default {
             });
             socket.value.on('new_card', (data) => {
                 console.log('New cards received:', data);
-            });
+                data.cards.forEach(card => {
+                    messages.value.push({ role: 'card', user_id: 'card', content: [{ type: 'text', text: card }] });
+                });
 
-            watch(() => props.projectId, (newVal) => {
-                if (newVal) {
-                    messages.value = [];
-                    lastread.value = null;
-                    if (socket.value && connected.value) {
-                        socket.value.emit('join', { projectId: newVal });
-                    }
-                    fetchInitialMessages(newVal);
-                }
-            }, { immediate: true });
-
-            watch(messages, () => {
                 if (messagesList.value) {
                     messagesList.value.scrollTop = messagesList.value.scrollHeight;
                 }
@@ -194,8 +192,7 @@ export default {
         });
 
         async function fetchInitialMessages(projectId) {
-            try {
-                const data = await apiCall(`/api/read-messages/${projectId}`, 'GET', null, true);
+            await apiCall(`/api/read-messages/${projectId}`, 'GET', null, true).then((data) => {
                 data.forEach(msg => {
                     if (msg.role === 'assistant' && msg.content && msg.content.length > 0 && msg.content[0].type === 'text') {
                         msg.content[0].text = marked.parse(msg.content[0].text);
@@ -206,10 +203,19 @@ export default {
                 if (data.length > 0) {
                     lastread.value = new Date(data[data.length - 1].timestamp);
                 }
-            } catch (err) {
-                console.error('Error fetching initial messages:', err);
-            }
+            });
         }
+
+        watch(() => props.projectId, (newVal) => {
+            if (newVal) {
+                messages.value = [];
+                lastread.value = null;
+                if (socket.value && connected.value) {
+                    socket.value.emit('join', { projectId: newVal });
+                }
+                fetchInitialMessages(newVal);
+            }
+        }, { immediate: true });
 
         onUnmounted(() => {
             if (socket.value) {

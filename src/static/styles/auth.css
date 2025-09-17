@@ -1,0 +1,74 @@
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+    min-width: 300px;
+    padding: 20px;
+    background-color: var(--rim-color);
+    border-radius: 12px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+
+    height: 100%;
+}
+
+form input {
+    align-self: stretch;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+}
+
+form input::placeholder {
+    color: var(--text-color);
+    opacity: 0.4;
+}
+
+form input:focus, form input:focus-visible {
+    outline: none;
+}
+
+form button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+}
+
+form span.switcher {
+    color: var(--text-color);
+    font-size: 12px;
+}
+
+form span.switcher a {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#viewer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

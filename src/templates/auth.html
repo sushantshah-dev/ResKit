@@ -6,6 +6,7 @@
     <title>Welcome to ResKit</title>
     <meta name="description" content="ResKit is an AI-powered toolkit for researchers, offering advanced paper search, reference exploration, and interactive knowledge graphs.">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}">
 </head>
 <body>
     <div class="main-container">
@@ -13,121 +14,14 @@
         <div id="app" class="main"> </div>
     </div>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <script>
-    const { createApp, ref } = Vue;
-
-    {% raw %}
-
-    const RegisterComponent = {
-        template: `
-        <div class="auth-container">
-            <h2>Register</h2>
-            <form @submit.prevent="register">
-                <input v-model="username" type="text" placeholder="Username" required />
-                <input v-model="email" type="email" placeholder="Email" required />
-                <input v-model="password" type="password" placeholder="Password" required />
-                <button type="submit">Register</button>
-                <span class="switcher">Already have an account? <a href="#" @click="$emit('switch-to-login')">Login here</a></span>
-            </form>
-            <p v-if="message">{{ message }}</p>
-        </div>
-        `,
-        setup() {
-            const username = ref('');
-            const email = ref('');
-            const password = ref('');
-            const message = ref('');
-
-            const register = async () => {
-                const response = await fetch('/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username.value,
-                        email: email.value,
-                        password: password.value
-                    })
-                });
-                const data = await response.json();
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/app';
-                } else {
-                    message.value = data.message;
-                }
-            };
-
-            return { username, email, password, message, register };
-        }
-    };
-
-    const LoginComponent = {
-        template: `
-        <div class="auth-container">
-            <h2>Login</h2>
-            <form @submit.prevent="login">
-                <input v-model="email" type="email" placeholder="Email" required />
-                <input v-model="password" type="password" placeholder="Password" required />
-                <button type="submit">Login</button>
-                <span class="switcher">Don't have an account? <a href="#" @click="$emit('switch-to-register')">Register here</a></span>
-            </form>
-            <p v-if="message">{{ message }}</p>
-        </div>
-        `,
-        setup() {
-            const email = ref('');
-            const password = ref('');
-            const message = ref('');
-
-            const login = async () => {
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email.value,
-                        password: password.value
-                    })
-                });
-                const data = await response.json();
-                console.log(data);
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/app';
-                } else {
-                    message.value = data.message;
-                }
-            };
-
-            return { email, password, message, login };
-        }
-    };
-
-    const App = {
-        components: { RegisterComponent, LoginComponent },
-        template: `
-            <register-component v-if="showRegister" @switch-to-login="switchToLogin" />
-            <login-component v-else @switch-to-register="switchToRegister" />
-        `,
-        setup() {
-            const showRegister = ref(true);
-
-            const switchToLogin = () => {
-                showRegister.value = false;
-            };
-
-            const switchToRegister = () => {
-                showRegister.value = true;
-            };
-
-            return { showRegister, switchToLogin, switchToRegister };
-        }
-    };
-
-    const app = createApp(App).mount('#app');
-    {% endraw %}
+    <script type="module">
+        import App from '../static/javascript/components/auth/App.js';
+        const { createApp } = Vue;
+        createApp(App).mount('#app');
     </script>
 </body>
 </html>
