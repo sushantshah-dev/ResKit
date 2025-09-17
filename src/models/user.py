@@ -60,3 +60,9 @@ def User(baseModel: Type[BaseModel], metadata: MetaData) -> tuple[Type[BaseModel
     )
 
     return User, user_table
+
+class UserNotFound(Exception):
+    def __init__(self, user_id: str = None):
+        self.user_id = user_id
+        self.message =  f"User with id {user_id} not found."
+        super().__init__(self.message)
