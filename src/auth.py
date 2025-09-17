@@ -1,12 +1,13 @@
 import hashlib
-from flask import Blueprint, render_template, request, jsonify
+import json
+from flask import Blueprint, Response, render_template, request, jsonify
 from functools import wraps
 import jwt
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import os, dotenv
 
-from .models import User
+from .models import User, UserNotFound
 
 dotenv.load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -70,16 +71,19 @@ def login():
 @auth_bp.route('/profile', methods=['GET'])
 @token_required
 def profile(current_user):
-    user = User.get(current_user)
-    if not user:
-        return jsonify({'message': 'User not found!'}), 404
-    
-    return jsonify({
-        'id': user.id,
-        'username': user.username,
-        'profile_picture': f"https://www.gravatar.com/avatar/{hashlib.sha256(user.email.lower().encode()).hexdigest()}",
-        'email': user.email,
-        'is_active': user.is_active,
-        'is_admin': user.is_admin,
-        'date_created': user.created_at.isoformat()
-    }), 200
+    try:
+        user = User.get(current_user)
+        if not user:
+            raise UserNotFound(current_user)
+        
+        return jsonify({
+            'id': user.id,
+            'username': user.username,
+            'profile_picture': f"https://www.gravatar.com/avatar/{hashlib.sha256(user.email.lower().encode()).hexdigest()}",
+            'email': user.email,
+            'is_active': user.is_active,
+            'is_admin': user.is_admin,
+            'date_created': user.created_at.isoformat()
+        }), 200
+    except UserNotFound as e:
+        return Response(json.dumps({"error": str(e)}), mimetype='application/json', status=404)

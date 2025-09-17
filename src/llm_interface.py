@@ -9,7 +9,7 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
-def get_response(messages, tools=None, attachments=None, model="google/gemini-2.5-pro"):
+def get_response(messages, tools=None, attachments=None, model="openrouter/sonoma-sky-alpha"):
     attachments = attachments or []
     
     for attachment in attachments:

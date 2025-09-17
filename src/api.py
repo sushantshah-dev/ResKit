@@ -20,14 +20,13 @@ def get_projects(user: Any) -> Response:
     owner_projects = Project.get_by_owner(user)
     member_projects = Project.get_by_membership(user)
     all_projects = [{"name": project.name, "id": project.id, "owner_id": project.owner_id} for project in owner_projects + member_projects]
-    print(f"User {user} has projects: {json.dumps(all_projects)}")
     return Response(json.dumps(all_projects), mimetype='application/json')
 
 @api_bp.route('/projects/<int:project_id>', methods=['GET'])
 @token_required
 def get_project(user: Any, project_id: int) -> Response:
     try:
-        project = Project.get_by_id(project_id)
+        project = Project.get(project_id)
         if not project:
             raise ProjectNotFound(project_id)
         if project.owner_id != user and (not project.is_public) and (user not in (project.members or [])):
@@ -110,7 +109,7 @@ def send_message(user: Any) -> Response:
 
         Thread(target=trigger_ai_response, args=(chat[0].id,)).start()
         
-        return Response(json.dumps({"message": "Message sent successfully", "chat_id": chat[0].id, "message_id": message.id}), mimetype='application/json', status=201)
+        return Response(json.dumps({"message": "Message sent successfully", "chat_id": chat.id, "message_id": message.id}), mimetype='application/json', status=201)
     except (UnauthorisedMessage) as e:
         return Response(json.dumps({"error": str(e)}), mimetype='application/json', status=403)
     except (UnauthorizedFileAccess) as e:
@@ -126,7 +125,7 @@ def send_message(user: Any) -> Response:
 @token_required
 def read_messages(user: Any, project_id: str) -> Response:
     try:
-        after: Optional[str] = request.args.get('after')
+        after: datetime = datetime.strptime(after[:-1], "%Y-%m-%dT%H:%M:%S.%f") if request.args.get('after') else datetime.min
 
         project = Project.get(project_id)
         if not project:
@@ -140,19 +139,20 @@ def read_messages(user: Any, project_id: str) -> Response:
         if user not in chat.members + [project.owner_id]:
             raise UnauthorizedChatAccess(user, chat.id)
         
-        messages = Message.get_all_by_chat(chat.id)
-        if after:
-            messages = [msg for msg in messages if msg.timestamp > datetime.strptime(after[:-1], "%Y-%m-%dT%H:%M:%S.%f")]
+        messages = Message.get_all_by_chat(chat.id, after)
 
+        participants = {user.id: user.username for user in [User.get(participant) for participant in list(set(chat.members + [project.owner_id]))]}
+        participants['system'] = 'ResKit'
+        participants['card'] = 'Reskit'
+        
         enriched_messages = []
         for message in messages:
-            user_info = User.get(message.user_id)
-            username = user_info.username if user_info else "Unknown"
-            if message.user_id == 'card':
-                message.content = json.loads(message.content)
             if message.content == "" or message.user_id == 'tool':
                 continue
-                
+            if message.user_id == 'card':
+                message.content = json.loads(message.content)
+            username = participants.get(message.user_id)
+            
             enriched_content = [{
                 "type": "text",
                 "text": message.content if message.content else ""
