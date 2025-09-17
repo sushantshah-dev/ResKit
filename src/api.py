@@ -20,14 +20,13 @@ def get_projects(user: Any) -> Response:
     owner_projects = Project.get_by_owner(user)
     member_projects = Project.get_by_membership(user)
     all_projects = [{"name": project.name, "id": project.id, "owner_id": project.owner_id} for project in owner_projects + member_projects]
-    print(f"User {user} has projects: {json.dumps(all_projects)}")
     return Response(json.dumps(all_projects), mimetype='application/json')
 
 @api_bp.route('/projects/<int:project_id>', methods=['GET'])
 @token_required
 def get_project(user: Any, project_id: int) -> Response:
     try:
-        project = Project.get_by_id(project_id)
+        project = Project.get(project_id)
         if not project:
             raise ProjectNotFound(project_id)
         if project.owner_id != user and (not project.is_public) and (user not in (project.members or [])):
@@ -110,7 +109,7 @@ def send_message(user: Any) -> Response:
 
         Thread(target=trigger_ai_response, args=(chat[0].id,)).start()
         
-        return Response(json.dumps({"message": "Message sent successfully", "chat_id": chat[0].id, "message_id": message.id}), mimetype='application/json', status=201)
+        return Response(json.dumps({"message": "Message sent successfully", "chat_id": chat.id, "message_id": message.id}), mimetype='application/json', status=201)
     except (UnauthorisedMessage) as e:
         return Response(json.dumps({"error": str(e)}), mimetype='application/json', status=403)
     except (UnauthorizedFileAccess) as e:
