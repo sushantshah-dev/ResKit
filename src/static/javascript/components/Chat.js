@@ -28,9 +28,12 @@ const PaperCard = {
 
 const MessageComponent = {
     components: { PaperCard },
-    props: ['message'],
+    props: ['message', 'noName', 'name'],
     template: `
         <div :class="['message', message.role === 'user' ? 'user' : 'ai']">
+            <span v-if="!noName" :class="message.role === 'user' ? 'user-tag' : 'ai-tag'">
+                {{ name }}
+            </span>
             <span v-if="message.user_id === 'system' && message.content[0].text !== ''" :class="'ai-msg'" v-html="message.content[0].text"></span>
             <span v-else-if="user && message.user_id === user.id" :class="'user-msg'">
                 {{ message.content[0].text }}
@@ -63,8 +66,8 @@ export default {
                     <ion-icon name="send"></ion-icon>
                 </button>
             </div>
-            <div v-if="messages.length > 0" class="messages-list">
-                <MessageComponent :message="msg" v-for="(msg, idx) in messages" :key="idx"/>
+            <div v-if="messages.length > 0" class="messages-list" ref="messagesList">
+                <MessageComponent :message="msg" v-for="(msg, idx) in messages" :key="idx" :noName="idx > 0 && messages[idx - 1].user_id === msg.user_id" :name="msg.username"></MessageComponent>
             </div>
         </div>
     `,

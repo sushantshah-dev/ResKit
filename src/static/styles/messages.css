@@ -17,7 +17,22 @@
     color: var(--text-color);
     border-radius: 8px;
     width: fit-content;
-    max-width: 80%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.messages-list .message .ai-tag {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-color);
+}
+
+.messages-list .message .user-tag {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--accent-color);
 }
 
 .messages-list .message pre {
@@ -30,14 +45,10 @@
 
 .messages-list .message.user {
     align-self: flex-end;
-    background-color: var(--accent-color);
-    color: var(--text-color);
 }
 
 .messages-list .message.assistant {
     align-self: flex-start;
-    background-color: var(--background-color);
-    color: var(--text-color);
 }
 
 .messages-list .message .paper-card .authors,
