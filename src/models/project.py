@@ -39,6 +39,22 @@ def Project(baseModel: Type[BaseModel], metadata: MetaData) -> tuple[Type[BaseMo
                         members=row.members
                     )
                 return None
+            
+        @classmethod
+        def get_by_owner(cls: Type['Project'], owner_id: str) -> list['Project']:
+            with get_db() as db:
+                rows = db.execute(select(project_table).where(project_table.c.owner_id == owner_id)).fetchall()
+                if rows:
+                    return [cls(id=row.id, name=row.name, chat_log=row.chat_log, papers=row.papers, graph=row.graph, is_public=row.is_public or False, owner_id=row.owner_id, members=row.members) for row in rows]
+                return []
+            
+        @classmethod
+        def get_by_membership(cls: Type['Project'], user_id: str) -> list['Project']:
+            with get_db() as db:
+                rows = db.execute(select(project_table).where(project_table.c.members.any(user_id))).fetchall()
+                if rows:
+                    return [cls(id=row.id, name=row.name, chat_log=row.chat_log, papers=row.papers, graph=row.graph, is_public=row.is_public or False, owner_id=row.owner_id, members=row.members) for row in rows]
+                return []
 
         @classmethod
         def all(cls: Type['Project']) -> list['Project']:
@@ -53,7 +69,7 @@ def Project(baseModel: Type[BaseModel], metadata: MetaData) -> tuple[Type[BaseMo
     project_table = Table(
         'project',
         metadata,
-        Column('id', String, primary_key=True, default=str(uuid.uuid4())),
+        Column('id', String, primary_key=True, default=lambda: str(uuid.uuid4())),
         Column('name', String, nullable=False),
         Column('chat_log', String, nullable=True),
         Column('papers', String, nullable=True),
