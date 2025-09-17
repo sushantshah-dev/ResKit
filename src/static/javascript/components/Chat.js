@@ -38,9 +38,7 @@ const MessageComponent = {
             <span v-else-if="user && message.user_id === user.id" :class="'user-msg'">
                 {{ message.content[0].text }}
             </span>
-            <span v-else-if="message.user_id === 'card'" :class="'ai-msg'">
-                <PaperCard :card="message.content[0].text" />
-            </span>
+            <PaperCard :card="message.content[0].text" v-else-if="message.user_id === 'card'" />
             <span v-else :class="'peer-msg'">
                 {{ message.content[0].text }}
             </span>
