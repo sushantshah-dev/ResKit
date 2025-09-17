@@ -111,3 +111,9 @@ class FileNotFound(Exception):
         self.file_id = file_id
         self.message = f"File {file_id} not found"
         super().__init__(self.message)
+        
+class FileCommentNotFound(Exception):
+    def __init__(self, comment_id):
+        self.comment_id = comment_id
+        self.message = f"File comment {comment_id} not found"
+        super().__init__(self.message)

@@ -64,3 +64,30 @@ def Project(baseModel: Type[BaseModel], metadata: MetaData) -> tuple[Type[BaseMo
     )
     
     return Project, project_table
+
+class ProjectNotFound(Exception):
+    def __init__(self, project_id):
+        self.project_id = project_id
+        self.message = f"Project {project_id} not found"
+        super().__init__(self.message)
+        
+class UnauthorizedProjectAccess(Exception):
+    def __init__(self, user_id, project_id):
+        self.user_id = user_id
+        self.project_id = project_id
+        self.message = f"User {user_id} is not authorized to access project {project_id}"
+        super().__init__(self.message)
+        
+class UnauthorizedProjectModification(Exception):
+    def __init__(self, user_id, project_id):
+        self.user_id = user_id
+        self.project_id = project_id
+        self.message = f"User {user_id} is not authorized to modify project {project_id}"
+        super().__init__(self.message)
+        
+class UnauthorizedProjectDeletion(Exception):
+    def __init__(self, user_id, project_id):
+        self.user_id = user_id
+        self.project_id = project_id
+        self.message = f"User {user_id} is not authorized to delete project {project_id}"
+        super().__init__(self.message)
