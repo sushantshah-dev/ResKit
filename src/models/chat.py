@@ -81,11 +81,10 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return None
 
         @classmethod
-        def get_all_by_chat(cls: Type['Message'], chat_id: str) -> list['Message']:
+        def get_all_by_chat(cls: Type['Message'], chat_id: str, after: datetime = datetime.min) -> list['Message']:
             with get_db() as db:
-                rows = db.execute(select(message_table).where(message_table.c.chat_id == chat_id)).fetchall()
+                rows = db.execute(select(message_table).where(message_table.c.chat_id == chat_id, message_table.c.timestamp > after)).fetchall()
                 if rows:
-                    # Sort by timestamp
                     rows = sorted(rows, key=lambda x: x.timestamp)
                     return [cls(id=row.id, chat_id=row.chat_id, user_id=row.user_id, content=row.content, attachments=row.attachments or [], timestamp=row.timestamp, tool_calls=row.tool_calls) for row in rows]
                 return []
