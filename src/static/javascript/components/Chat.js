@@ -4,15 +4,26 @@ const { onUnmounted } = Vue;
 const PaperCard = {
     props: ['card'],
     template: `
-        
         <div class="paper-card">
             <h3>{{ card.title }}</h3>
-            <p><strong>Authors:</strong> {{ card.authors.join(', ') }}</p>
-            <p><strong>Published:</strong> {{ card.published }}</p>
-            <p>{{ card.summary }}</p>
+            <p class="authors"><strong>Authors:</strong> {{ card.authors.join(', ') }}</p>
+            <p class="published">Published on {{ formatDate(card.published) }}</p>
+            <p class="summary">{{ card.summary }}</p>
             <a v-if="card.pdf_link" :href="card.pdf_link" target="_blank">PDF</a>
         </div>
-    `
+    `,
+    methods: {
+        formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit'
+            });
+        }
+    }
 };
 
 const MessageComponent = {

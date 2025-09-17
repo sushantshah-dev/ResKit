@@ -39,3 +39,9 @@
     background-color: var(--background-color);
     color: var(--text-color);
 }
+
+.messages-list .message .paper-card .authors,
+.messages-list .message .paper-card .published,
+.messages-list .message .paper-card .summary {
+    font-size: 12px;
+}
