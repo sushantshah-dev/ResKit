@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from .api import api_bp
 from .auth import auth_bp
 
 def create_app():
@@ -14,6 +15,7 @@ def create_app():
     def app_view():
         return render_template('app.html')
     
+    app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
     @socketio.on('join')
