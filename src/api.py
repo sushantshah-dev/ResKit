@@ -125,7 +125,7 @@ def send_message(user: Any) -> Response:
 @token_required
 def read_messages(user: Any, project_id: str) -> Response:
     try:
-        after: Optional[str] = request.args.get('after')
+        after: datetime = datetime.strptime(after[:-1], "%Y-%m-%dT%H:%M:%S.%f") if request.args.get('after') else datetime.min
 
         project = Project.get(project_id)
         if not project:
@@ -139,19 +139,20 @@ def read_messages(user: Any, project_id: str) -> Response:
         if user not in chat.members + [project.owner_id]:
             raise UnauthorizedChatAccess(user, chat.id)
         
-        messages = Message.get_all_by_chat(chat.id)
-        if after:
-            messages = [msg for msg in messages if msg.timestamp > datetime.strptime(after[:-1], "%Y-%m-%dT%H:%M:%S.%f")]
+        messages = Message.get_all_by_chat(chat.id, after)
 
+        participants = {user.id: user.username for user in [User.get(participant) for participant in list(set(chat.members + [project.owner_id]))]}
+        participants['system'] = 'ResKit'
+        participants['card'] = 'Reskit'
+        
         enriched_messages = []
         for message in messages:
-            user_info = User.get(message.user_id)
-            username = user_info.username if user_info else "Unknown"
-            if message.user_id == 'card':
-                message.content = json.loads(message.content)
             if message.content == "" or message.user_id == 'tool':
                 continue
-                
+            if message.user_id == 'card':
+                message.content = json.loads(message.content)
+            username = participants.get(message.user_id)
+            
             enriched_content = [{
                 "type": "text",
                 "text": message.content if message.content else ""
