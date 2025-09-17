@@ -41,7 +41,6 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
             with get_db() as db:
                 rows = db.execute(select(chat_table).where(chat_table.c.project_id == project_id)).fetchall()
                 if rows:
-                    print(rows)
                     return [cls(id=row.id, project_id=row.project_id, created_at=row.created_at, members=row.members or []) for row in rows]
                 return []
             
@@ -50,7 +49,6 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
             chat = cls.get(chat_id)
             if not chat:
                 raise UnauthorisedMessage(user_id, chat_id)
-            print(chat.members, user_id)
             if chat.members and user_id not in chat.members + ['system']:
                 raise UnauthorisedMessage(user_id, chat_id)
             message = Message(chat_id=chat_id, user_id=user_id, content=content, attachments=attachments)
@@ -83,11 +81,10 @@ def Chat(baseModel: Type[BaseModel], metadata: MetaData):
                 return None
 
         @classmethod
-        def get_all_by_chat(cls: Type['Message'], chat_id: str) -> list['Message']:
+        def get_all_by_chat(cls: Type['Message'], chat_id: str, after: datetime = datetime.min) -> list['Message']:
             with get_db() as db:
-                rows = db.execute(select(message_table).where(message_table.c.chat_id == chat_id)).fetchall()
+                rows = db.execute(select(message_table).where(message_table.c.chat_id == chat_id, message_table.c.timestamp > after)).fetchall()
                 if rows:
-                    # Sort by timestamp
                     rows = sorted(rows, key=lambda x: x.timestamp)
                     return [cls(id=row.id, chat_id=row.chat_id, user_id=row.user_id, content=row.content, attachments=row.attachments or [], timestamp=row.timestamp, tool_calls=row.tool_calls) for row in rows]
                 return []
